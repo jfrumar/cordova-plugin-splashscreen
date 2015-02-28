@@ -19,6 +19,10 @@
 
 # org.apache.cordova.splashscreen
 
+## Fork changes
+
+This fork hides the title bar up the top of the screen when it shows the splash screen.
+
 This plugin displays and hides a splash screen during application launch.
 
 ## Installation
