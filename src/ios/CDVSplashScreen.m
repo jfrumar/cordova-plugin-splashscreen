@@ -278,6 +278,8 @@
     _imageView.frame = imgBounds;
 }
 
+// Animating doesn't work at all on iOS at all,
+// so updating this to not even try.
 - (void)setVisible:(BOOL)visible
 {
     if (visible == _visible) {
@@ -299,29 +301,8 @@
         if (_imageView == nil) {
             [self createViews];
         }
-    } else if (fadeDuration == 0) {
-        [self destroyViews];
     } else {
-      __weak __typeof(self) weakSelf = self;
-
-      dispatch_async(dispatch_get_main_queue(), ^{
-          [UIView transitionWithView:self.viewController.view
-                            duration:fadeDuration
-                             options:UIViewAnimationOptionTransitionNone
-                          animations:^(void) {
-                              __typeof(self) strongSelf = weakSelf;
-                              if (strongSelf != nil) {
-                                  [strongSelf->_activityView setAlpha:0];
-                                  [strongSelf->_imageView setAlpha:0];
-                              }
-                          }
-                          completion:^(BOOL finished) {
-                              if (finished) {
-                                  [weakSelf destroyViews];
-                              }
-                          }
-          ];
-      });
+        [self destroyViews];
     }
 }
 
