@@ -280,29 +280,86 @@
 
 // Animating doesn't work at all on iOS at all,
 // so updating this to not even try.
+//- (void)setVisible:(BOOL)visible
+//{
+//    if (visible == _visible) {
+//        return;
+//    }
+//    _visible = visible;
+//
+//    id fadeSplashScreenValue = [self.commandDelegate.settings objectForKey:[@"FadeSplashScreen" lowercaseString]];
+//    id fadeSplashScreenDuration = [self.commandDelegate.settings objectForKey:[@"FadeSplashScreenDuration" lowercaseString]];
+//
+//    float fadeDuration = fadeSplashScreenDuration == nil ? kSplashScreenDurationDefault : [fadeSplashScreenDuration floatValue];
+//
+//    if ((fadeSplashScreenValue == nil) || ![fadeSplashScreenValue boolValue]) {
+//        fadeDuration = 0;
+//    }
+//
+//    // Never animate the showing of the splash screen.
+//    if (visible) {
+//        if (_imageView == nil) {
+//            [self createViews];
+//        }
+//    } else {
+//        [self destroyViews];
+//    }
+//}
+
 - (void)setVisible:(BOOL)visible
 {
     if (visible == _visible) {
         return;
     }
     _visible = visible;
-
+    
     id fadeSplashScreenValue = [self.commandDelegate.settings objectForKey:[@"FadeSplashScreen" lowercaseString]];
     id fadeSplashScreenDuration = [self.commandDelegate.settings objectForKey:[@"FadeSplashScreenDuration" lowercaseString]];
-
+    
     float fadeDuration = fadeSplashScreenDuration == nil ? kSplashScreenDurationDefault : [fadeSplashScreenDuration floatValue];
-
+    
     if ((fadeSplashScreenValue == nil) || ![fadeSplashScreenValue boolValue]) {
         fadeDuration = 0;
     }
+    
+    [self setVisible:visible fadeDuration:fadeDuration];
+}
 
-    // Never animate the showing of the splash screen.
-    if (visible) {
-        if (_imageView == nil) {
-            [self createViews];
+- (void)setVisible:(BOOL)visible fadeDuration:(float)fadeDuration
+{
+    if ([NSThread isMainThread]) {
+        // Never animate the showing of the splash screen.
+        if (visible) {
+            if (_imageView == nil) {
+                [self createViews];
+            }
+        } else if (fadeDuration == 0) {
+            [self destroyViews];
+        } else {
+            __weak __typeof(self) weakSelf = self;
+            
+            [UIView transitionWithView:self.viewController.view
+                              duration:fadeDuration
+                               options:UIViewAnimationOptionTransitionNone
+                            animations:^(void) {
+                                __block __typeof(self) strongSelf = weakSelf;
+                                if (strongSelf != nil) {
+                                    [strongSelf->_activityView setAlpha:0];
+                                    [strongSelf->_imageView setAlpha:0];
+                                }
+                            }
+                            completion:^(BOOL finished) {
+                                if (finished) {
+                                    [weakSelf destroyViews];
+                                }
+                            }
+             ];
         }
-    } else {
-        [self destroyViews];
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self setVisible:visible fadeDuration:fadeDuration];
+        });
     }
 }
 
