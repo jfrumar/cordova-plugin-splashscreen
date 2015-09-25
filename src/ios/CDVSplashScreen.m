@@ -349,9 +349,7 @@
                                 }
                             }
                             completion:^(BOOL finished) {
-                                if (finished) {
-                                    [weakSelf destroyViews];
-                                }
+                                [weakSelf destroyViews];
                             }
              ];
         }
